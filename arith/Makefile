@@ -35,7 +35,7 @@ LDFLAGS = -g -L/comp/40/build/lib -L/usr/sup/cii40/lib64
 # All programs cii40 (Hanson binaries) and *may* need -lm (math)
 # 40locality is a catch-all for this assignment, netpbm is needed for pnm
 # rt is for the "real time" timing library, which contains the clock support
-LDLIBS = -l40locality -lnetpbm -lcii40 -lm -lrt
+LDLIBS = -larith40 -l40locality -lnetpbm -lcii40 -lm -lrt
 
 # Collect all .h files in your directory.
 # This way, you can never forget to add
@@ -49,7 +49,9 @@ INCLUDES = $(shell echo *.h)
 
 ############### Rules ###############
 
-all: a2test ppmtrans timing_test
+all: ppmdiff
+
+#TODO DELETE THIS ^removed a2test, ppmtrans, timing_test
 
 ## Compile step (.c files -> .o files)
 
@@ -59,13 +61,16 @@ all: a2test ppmtrans timing_test
 
 ## Linking step (.o -> executable program)
 
-a2test: a2test.o uarray2b.o uarray2.o a2plain.o a2blocked.o
-	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+# a2test: a2test.o uarray2b.o uarray2.o a2plain.o a2blocked.o
+# 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-timing_test: timing_test.o cputiming.o
-	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) 
+# timing_test: timing_test.o cputiming.o
+# 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) 
 
-ppmtrans: ppmtrans.o cputiming.o uarray2.o uarray2b.o a2plain.o a2blocked.o
+# ppmtrans: ppmtrans.o cputiming.o uarray2.o uarray2b.o a2plain.o a2blocked.o
+# 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 
