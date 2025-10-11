@@ -1,166 +1,108 @@
-/*
- *      ppmdiff.c
- *      Kevin Lu (klu07), Justin Paik (jpaik03)
- *      October 21, 2025
- *      arith
- * 
- *      Implementation of ppmdiff, which calculates a numerical representation
- *      of error between two ppm files.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include "pnm.h"
+#include <math.h>
 #include "assert.h"
-// TODO other includes??
 
-/******** main ********
- *
- * Driver function to run ppmdiff program. All storage variable pointers and
- * program logic follows within this function. 
- *
- * Parameters:
- *      int argc:       argument count
- *      char *argv[]:   argument array
- * Return: 
- *      0 as main function
- * Expects:
- *      user to compile program
- * Notes:
- *      Throws a CRE if any unexpected behavior is encountered.
- ************************/
+#include "pnm.h"
+#include "a2methods.h"
+#include "a2plain.h"
+
+FILE *openFile(const char *filename);
+
 int main(int argc, char *argv[])
 {
-        
+        /* Validate usage */
+        if (argc != 3) {
+                fprintf(stderr, "Usage: ./ppmdiff <file1> <file2>\n");
+                exit(EXIT_FAILURE);
+        }
+
+        /* Read in images into 2D arrays */
+        A2Methods_T methods = uarray2_methods_plain;
+        assert(methods);
+        FILE *fp1 = openFile(argv[1]);
+        FILE *fp2 = openFile(argv[2]);
+        Pnm_ppm img1 = Pnm_ppmread(fp1, methods);
+        Pnm_ppm img2 = Pnm_ppmread(fp2, methods);
+
+        /* If image dimensions differ by more than 1, fail */
+        if (abs((int)img1->width - (int)img2->width) > 1 || 
+            abs((int)img1->height - (int)img2->height) > 1) {
+                fprintf(stderr, "Error: Images differ by more than 1 pixel.\n");
+                printf("1.0\n");
+
+                Pnm_ppmfree(&img1);
+                Pnm_ppmfree(&img2);
+                fclose(fp1);
+                fclose(fp2);
+
+                exit(EXIT_FAILURE);
+        }
+
+        /* Find smaller image */
+        unsigned w;
+        if (img1->width < img2->width) {
+                w = img1->width;
+        } else {
+                w = img2->width;
+        }
+        unsigned h;
+        if (img1->height < img2->height) {
+                h = img1->height;
+        } else {
+                h = img2->height;
+        }
+
+        /* Divide by zero case */
+        if (w == 0 || h == 0) {
+                printf("0.0000\n");
+        } else {
+                double sum_sq_diff = 0.0;
+                double denom1 = (double)img1->denominator;
+                double denom2 = (double)img2->denominator;
+
+                /* Iterate through smallest dimensions */
+                for (unsigned j = 0; j < h; j++) {
+                        for (unsigned i = 0; i < w; i++) {
+                                Pnm_rgb p1 = (Pnm_rgb)methods->at(img1->pixels, i, j);
+                                Pnm_rgb p2 = (Pnm_rgb)methods->at(img2->pixels, i, j);
+
+                                /* Convert scaled integers to floating point values */
+                                double r1 = (double)p1->red   / denom1;
+                                double g1 = (double)p1->green / denom1;
+                                double b1 = (double)p1->blue  / denom1;
+
+                                double r2 = (double)p2->red   / denom2;
+                                double g2 = (double)p2->green / denom2;
+                                double b2 = (double)p2->blue  / denom2;
+                                
+                                /* Add the squared differences of each color channel to the sum */
+                                sum_sq_diff += pow(r1 - r2, 2);
+                                sum_sq_diff += pow(g1 - g2, 2);
+                                sum_sq_diff += pow(b1 - b2, 2);
+                        }
+                }
+
+                /* Apply formula for the root mean square difference */
+                double e = sqrt(sum_sq_diff / (3.0 * w * h));
+                printf("%.4f\n", e);
+        }
+
+        Pnm_ppmfree(&img1);
+        Pnm_ppmfree(&img2);
+        fclose(fp1);
+        fclose(fp2);
+
         return 0;
 }
 
-/******** processImage ********
- *
- * Handles the entire image transformation process including reading,
- * rotating, timing, and writing the output image.
- *
- * Parameters:
- *      int argc:               argument count from command line
- *      char *argv[]:           argument array containing command line args
- *      int i:                  index of filename argument in argv
- *      char *time_file_name:   filename to write timing data to (NULL if none)
- *      int rotation:           rotation angle (0, 90, 180, or 270 degrees)
- *      A2Methods_T methods:    method suite for array operations
- *      A2Methods_mapfun *map:  mapping function to use for transformation
- * Return: 
- *      nothing
- * Expects:
- *      methods is not NULL
- *      map is not NULL
- *      rotation is 0, 90, 180, or 270
- *      if time_file_name is not NULL, it is a valid writable file path
- * Notes:
- *      throws a CRE if methods is NULL
- *      throws a CRE if ppmImage cannot be read
- *      throws a CRE if timer allocation fails when timing is requested
- *      frees all dynamically allocated memory before returning
- ************************/
-void processImage(int argc, char *argv[], int i, char *time_file_name,
-                  int rotation, A2Methods_T methods, A2Methods_mapfun *map)
-{           
-        double time_elapsed = 0.0;
-        CPUTime_T timer = NULL;
-
-        /* if timing was requested create timer */
-        if (time_file_name != NULL) {
-                timer = CPUTime_New();
-                assert(timer != NULL);
-        }
-
-        /* open user provided image */
-        Pnm_ppm ppmImage = openReadImage(argc, argv, i, methods);
-
-        /* create a struct holding image info to pass into our mapping func */
-        unsigned width;
-        unsigned height;
-        struct passedInfo helperStruct =
-        initRotatedArray(ppmImage, rotation, methods, &width, &height);
-
-        /* check we are in bounds and destination array and current image
-           arrays are valid */
-        assert(width > 0 && height > 0);
-        assert(helperStruct.destArr != NULL && ppmImage->pixels != NULL);  
-
-        /* start timer if timing was requested, map our data structure,
-           then stop timer when mapping is complete */
-        if (timer != NULL) {
-                CPUTime_Start(timer);
-        }
-
-        map(ppmImage->pixels, rotateppm, &helperStruct);
-
-        if (timer != NULL) {
-                time_elapsed = CPUTime_Stop(timer);
-        }
-
-        /* create and fill finalImage struct that holds transformed image */
-        struct Pnm_ppm finalImage;
-        finalImage.width = width;
-        finalImage.height = height;
-        finalImage.denominator = ppmImage->denominator;
-        finalImage.pixels = helperStruct.destArr;
-        finalImage.methods = methods;
-
-        /* write to stdout*/
-        Pnm_ppmwrite(stdout, &finalImage);
-
-        /* call helper function to write/append time data info to a file */
-        if (timer != NULL) {
-                writeTiming(time_file_name, ppmImage->width, 
-                            ppmImage->height, time_elapsed, rotation, map, 
-                            methods);
-                CPUTime_Free(&timer);
-        }
-        /* free memory */
-        Pnm_ppmfree(&ppmImage);
-        methods->free(&helperStruct.destArr);
-}
-
-/******** openReadImage ********
- *
- * Opens and reads a PPM image file, returning a Pnm_ppm struct containing
- * the image data.
- *
- * Parameters:
- *      int argc:               argument count from command line
- *      char *argv[]:           argument array containing command line args
- *      int i:                  index of filename argument in argv
- *      A2Methods_T methods:    method suite to use for storing pixel data
- * Return: 
- *      a Pnm_ppm struct pointer containing the read image data
- * Expects:
- *      methods is not NULL
- *      if i < argc, argv[i] is a valid readable file path
- *      the file contains valid PPM format data
- * Notes:
- *      throws a CRE if file pointer is NULL
- *      throws a CRE if ppmImage is NULL after reading
- *      throws a CRE if pixel array is NULL
- *      throws a CRE if width or height is not positive
- *      closes file if not reading from stdin
- ************************/
-Pnm_ppm openReadImage(int argc, char *argv[], int i, A2Methods_T methods)
+FILE *openFile(const char *filename)
 {
-        FILE *fp = openFile(argc, argv, i);
-        assert(fp != NULL);
-
-        /* read in a pnm_ppm image and check its valid */
-        Pnm_ppm ppmImage = Pnm_ppmread(fp, methods);
-        assert(ppmImage != NULL && ppmImage->pixels != NULL);
-        assert(ppmImage->width > 0 && ppmImage->height > 0);
-
-        /* close file if one has been opened */
-        if (fp != stdin) {
-                fclose(fp);
+        FILE *fp = fopen(filename, "rb");
+        if (fp == NULL) {
+                fprintf(stderr, "Could not open file: %s\n", filename);
+                exit(EXIT_FAILURE);
         }
-
-        return ppmImage;
+        return fp;
 }
