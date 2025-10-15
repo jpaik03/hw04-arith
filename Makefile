@@ -49,9 +49,8 @@ INCLUDES = $(shell echo *.h)
 
 ############### Rules ###############
 
-all: ppmdiff
-
-#TODO DELETE THIS ^removed a2test, ppmtrans, timing_test
+all: 40image
+//TODO: DID REMOVE PPMDIFF
 
 ## Compile step (.c files -> .o files)
 
@@ -70,9 +69,13 @@ all: ppmdiff
 # ppmtrans: ppmtrans.o cputiming.o uarray2.o uarray2b.o a2plain.o a2blocked.o
 # 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
+# TODO: delete ppmdiff.o
+40image: 40image.o uarray2.o uarray2b.o a2plain.o a2blocked.o readImage.o \
+			compress40.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
 	rm -f ppmtrans a2test timing_test *.o
