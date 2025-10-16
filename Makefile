@@ -65,11 +65,6 @@ all: 40image
 	 readWriteImage.o convertRGB_CV.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-# TODO: delete ppmdiff.o
-40image: 40image.o uarray2.o uarray2b.o a2plain.o a2blocked.o readImage.o \
-			compress40.o
-	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
-
 ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 

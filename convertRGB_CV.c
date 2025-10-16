@@ -59,7 +59,7 @@ static void applyPixelToFloats(int col, int row, A2Methods_UArray2 pixels,
                         
         (void) pixels;
         struct applyPixelToFloatsClosure *closure = cl;
-        Pnm_RGB pixel = elem;
+        Pnm_rgb pixel = elem;
 
         unsigned denom = closure->img->denominator;
 
