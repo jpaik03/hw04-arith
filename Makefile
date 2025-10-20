@@ -1,4 +1,4 @@
-# Makefile for locality (Comp 40 Assignment 3)
+# Makefile for arith (Comp 40 Assignment 4)
 # 
 # Includes build rules for a2test and ppmtrans.
 #
@@ -49,9 +49,10 @@ INCLUDES = $(shell echo *.h)
 
 ############### Rules ###############
 
-all: ppmdiff
-
-#TODO DELETE THIS ^removed a2test, ppmtrans, timing_test
+all: 40image ppmdiff
+# TODO: REMOVE all instances of PPMDIFF
+# TODO: REMOVE all instances of PPMDIFF
+# TODO: REMOVE all instances of PPMDIFF
 
 ## Compile step (.c files -> .o files)
 
@@ -61,18 +62,12 @@ all: ppmdiff
 
 ## Linking step (.o -> executable program)
 
-# a2test: a2test.o uarray2b.o uarray2.o a2plain.o a2blocked.o
-# 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
-
-# timing_test: timing_test.o cputiming.o
-# 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) 
-
-# ppmtrans: ppmtrans.o cputiming.o uarray2.o uarray2b.o a2plain.o a2blocked.o
-# 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+40image: 40image.o uarray2.o uarray2b.o a2plain.o a2blocked.o compress40.o \
+	 readWriteImage.o pixelOperation.o blockOperation.o bitpack.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-
 clean:
-	rm -f ppmtrans a2test timing_test *.o
+	rm -f 40image ppmdiff *.o
