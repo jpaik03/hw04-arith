@@ -16,10 +16,12 @@
 #include "a2blocked.h"
 #include "a2methods.h"
 
+#define BLOCKSIZE 2
+
 /* Initialize helper functions, see function contracts below */
 static Pnm_ppm trimImage(Pnm_ppm img, A2Methods_mapfun *map);
-static void copyPixel(int col, int row, A2Methods_UArray2 newArray, 
-                       void *elem, void *cl);
+static void copyPixel(int col, int row, A2Methods_UArray2 newArray, void *elem,
+                      void *cl);
 
 /******** copyClosure struct ********
  *
@@ -104,8 +106,8 @@ static Pnm_ppm trimImage(Pnm_ppm oldImg, A2Methods_mapfun *map)
         assert(oldImg->methods != NULL);
         assert(map != NULL);
 
-        int newWidth = ((int) oldImg->width / 2) * 2;
-        int newHeight = ((int) oldImg->height / 2) * 2;
+        int newWidth = ((int) oldImg->width / BLOCKSIZE) * BLOCKSIZE;
+        int newHeight = ((int) oldImg->height / BLOCKSIZE) * BLOCKSIZE;
         /* If dimensions are unchanged, no trimming is needed */
         if (newWidth == (int) oldImg->width &&
             newHeight == (int) oldImg->height) {

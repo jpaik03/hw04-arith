@@ -19,6 +19,7 @@
 #include "readWriteImage.h"
 #include "pixelOperation.h"
 #include "blockOperation.h"
+#include "codewords.h"
 
 /* reads PPM, writes compressed image */
 extern void compress40(FILE *input)
@@ -46,6 +47,8 @@ extern void compress40(FILE *input)
         
         UArray2_T quantInts = quantizeValues(DCTSpace, pMethods);
         pMethods->free((A2Methods_UArray2 *) &DCTSpace);
+
+        printWords(quantInts, pMethods);
 
         // TODO: UNCOMMENT WHEN DECOMPRESSION STEPS ARE MOVED
         // pMethods->free(&quantInts);
@@ -84,5 +87,30 @@ extern void compress40(FILE *input)
 
 extern void decompress40(FILE *input)
 {
-        (void)input;
+        unsigned width, height;
+        int read = fscanf(in, "COMP40 Compressed image format 2\n%u %u", 
+                          &width, &height);
+        assert(read == 2);
+        int c = getc(in);
+        assert(c == '\n');
+
+        UArray2_T pixels = methods->new(width, height, 
+                                           sizeof(struct pnm_rgb));
+
+        /* Struct population */
+        struct Pnm_ppm pixmap = { 
+                .width = width, 
+                .height = height,
+                .denominator = 255, 
+                .pixels = pixels,
+                .methods = methods
+        };
+
+        
+
+
+        //TODO: ADD DECOMPRESSION STEPS
+
+        //TODO: WRITE
+        //TODO: FREE
 }

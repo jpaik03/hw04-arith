@@ -12,5 +12,8 @@
 #include <stdio.h>
 #include "pnm.h"
 
+/* Compression */
 Pnm_ppm readImage(FILE *fp);
+
+/* Decompression */
 void writeImage(Pnm_ppm pixmap);

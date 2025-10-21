@@ -4,30 +4,39 @@
  *      October 21, 2025
  *      arith
  * 
- *      // TODO: description
+ *      Interface for converting pixel data between RGB and Component Video
+ *      Color Space (CVCS), and for related utility functions.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-#include "uarray2b.h"
 #include "pnm.h"
+#include "a2methods.h"
+#include "uarray2b.h"
 
-typedef struct pixInfo *pixInfo;
+/******** pixInfo struct ********
+ *
+ * A public struct holding the floating-point values for a single pixel in the
+ * Component Video Color Space.
+ *
+ * Fields:
+ *      float y:  The luminance component.
+ *      float pb: The blue-difference chroma component.
+ *      float pr: The red-difference chroma component.
+ * Notes:
+ *      This struct is defined publicly in the header so that other modules
+ *      (e.g., blockOperation) can directly access its fields to perform
+ *      calculations like averaging chroma or applying DCT to luminance.
+ ************************/
+struct pixInfo
+{
+        float y, pb, pr;
+};
 
 /* Compression */
 UArray2b_T getRGBCompVid(Pnm_ppm img, A2Methods_T methods);
-
-/* Accessors and modifiers for blocked operation module */
-float getPb(pixInfo p);
-float getPr(pixInfo p);
-float getY(pixInfo p);
-size_t getpixInfoSize();
-
-void setPb(pixInfo p, float pb);
-void setPr(pixInfo p, float pr);
-void setY(pixInfo p, float y);
 
 /* Decompression */
 Pnm_ppm getRGBInts(UArray2b_T RGBFloats, A2Methods_T methods);

@@ -18,7 +18,7 @@
 #include "pixelOperation.h"
 #include "arith40.h"
 
-const int PIX_BLOCKSIZE = 2;
+#define BLOCKSIZE 2
 
 static void applyCompVidToDCT(int col, int row, A2Methods_UArray2 pixels, 
                               void *elem, void *cl);
@@ -36,14 +36,9 @@ static void applyDequantize(int col, int row, A2Methods_UArray2 pixels,
                             
 static float dequantizeBCD(int quantizedCoeff);
 
-//TODO: STRUCT CONTRACT AND UNCOMMENT
+//TODO: STRUCT CONTRACTS
 struct DCTVals {
         float a, b, c, d, bpb, bpr;
-};
-
-struct quantized {
-        unsigned a, indexbpb, indexbpr;
-        int b, c, d;
 };
 
 struct applyCompVidToDCTClosure {
@@ -82,11 +77,11 @@ UArray2_T pixelsToDCTBlock(UArray2b_T RGBCompVid, A2Methods_T bMethods,
         A2Methods_mapfun *map = pMethods->map_default;
         assert(map != NULL);
 
-        assert(bMethods->width(RGBCompVid) % 2 == 0);
-        assert(bMethods->height(RGBCompVid) % 2 == 0);
+        assert(bMethods->width(RGBCompVid) % BLOCKSIZE == 0);
+        assert(bMethods->height(RGBCompVid) % BLOCKSIZE == 0);
 
-        int blockedWidth = bMethods->width(RGBCompVid) / 2;
-        int blockedHeight = bMethods->height(RGBCompVid) / 2;
+        int blockedWidth = bMethods->width(RGBCompVid) / BLOCKSIZE;
+        int blockedHeight = bMethods->height(RGBCompVid) / BLOCKSIZE;
 
         UArray2_T DCTSpace = pMethods->new(blockedWidth,
                                                blockedHeight,
@@ -110,25 +105,33 @@ static void applyCompVidToDCT(int col, int row, A2Methods_UArray2 pixels,
         struct applyCompVidToDCTClosure *closure = cl;
 
         struct pixInfo *pix1 = closure->bMethods->at(closure->RGBCompVid, 
-                                                     col * 2, row * 2);
+                                                     col * BLOCKSIZE,
+                                                     row * BLOCKSIZE);
         struct pixInfo *pix2 = closure->bMethods->at(closure->RGBCompVid, 
-                                                     col * 2 + 1, row * 2);
+                                                     col * BLOCKSIZE + 1,
+                                                     row * BLOCKSIZE);
         struct pixInfo *pix3 = closure->bMethods->at(closure->RGBCompVid,
-                                                     col * 2, row * 2 + 1);
+                                                     col * BLOCKSIZE,
+                                                     row * BLOCKSIZE + 1);
         struct pixInfo *pix4 = closure->bMethods->at(closure->RGBCompVid,    
-                                                     col * 2 + 1, row * 2 + 1);
+                                                     col * BLOCKSIZE + 1,
+                                                     row * BLOCKSIZE + 1);
 
-        float pb_bar = (getPb(pix1) + getPb(pix2) +
-                        getPb(pix3) + getPb(pix4)) / 4.0;
-        float pr_bar = (getPr(pix1) + getPr(pix2) +
-                        getPr(pix3) + getPr(pix4)) / 4.0;
+
+        float pb_bar = (pix1->pb + pix2->pb + pix3->pb + pix4->pb) / 4.0;
+        float pr_bar = (pix1->pr + pix2->pr + pix3->pr + pix4->pr) / 4.0;
 
         float a, b, c, d;
+
+        float pix4y = pix4->y;
+        float pix3y = pix3->y;
+        float pix2y = pix2->y;
+        float pix1y = pix1->y;
         
-        a = (getY(pix4) + getY(pix3) + getY(pix2) + getY(pix1)) / 4.0;
-        b = (getY(pix4) + getY(pix3) - getY(pix2) - getY(pix1)) / 4.0;
-        c = (getY(pix4) - getY(pix3) + getY(pix2) - getY(pix1)) / 4.0;
-        d = (getY(pix4) - getY(pix3) - getY(pix2) + getY(pix1)) / 4.0;
+        a = (pix4y + pix3y + pix2y + pix1y) / 4.0;
+        b = (pix4y + pix3y - pix2y - pix1y) / 4.0;
+        c = (pix4y - pix3y + pix2y - pix1y) / 4.0;
+        d = (pix4y - pix3y - pix2y + pix1y) / 4.0;
 
         struct DCTVals *destDCT = closure->pMethods->at(closure->DCTSpace,
                                                               col, row);
@@ -245,13 +248,12 @@ UArray2b_T DCTBlockToPixels(UArray2_T DCTSpace, A2Methods_T pMethods,
         A2Methods_mapfun *map = bMethods->map_default;
         assert(map != NULL);
 
-        int pixelWidth = pMethods->width(DCTSpace) * PIX_BLOCKSIZE;
-        int pixelHeight = pMethods->height(DCTSpace) * PIX_BLOCKSIZE;
+        int pixelW = pMethods->width(DCTSpace) * BLOCKSIZE;
+        int pixelH = pMethods->height(DCTSpace) * BLOCKSIZE;
 
-        UArray2b_T RGBFloats = bMethods->new_with_blocksize(pixelWidth,
-                                                           pixelHeight,
-                                                           getpixInfoSize(),
-                                                           PIX_BLOCKSIZE);
+        UArray2b_T RGBFloats = bMethods->new_with_blocksize(pixelW, pixelH,
+                                                         sizeof(struct pixInfo),
+                                                         BLOCKSIZE);
 
         struct applyDCTToPixelClosure closure = {RGBFloats, pMethods, bMethods, 
                                                  DCTSpace};
@@ -270,7 +272,8 @@ static void applyDCTToPixel(int col, int row, A2Methods_UArray2 pixels,
         struct applyDCTToPixelClosure *closure = cl;
 
         struct DCTVals *srcDCT = closure->pMethods->at(closure->DCTSpace,
-                                                      col / 2, row / 2);
+                                                       col / BLOCKSIZE,
+                                                       row / BLOCKSIZE);
 
         float a = srcDCT->a;
         float b = srcDCT->b;
@@ -280,11 +283,11 @@ static void applyDCTToPixel(int col, int row, A2Methods_UArray2 pixels,
         float pr_bar = srcDCT->bpr;
 
         float y;
-        if (col % 2 == 0 && row % 2 == 0) {
+        if (col % BLOCKSIZE == 0 && row % BLOCKSIZE == 0) {
                 y = a - b - c + d;
-        } else if (col % 2 == 1 && row % 2 == 0) {
+        } else if (col % BLOCKSIZE == 1 && row % BLOCKSIZE == 0) {
                 y = a - b + c - d;
-        } else if (col % 2 == 0 && row % 2 == 1) {
+        } else if (col % BLOCKSIZE == 0 && row % BLOCKSIZE == 1) {
                 y = a + b - c - d;
         } else {
                 y = a + b + c + d;
@@ -293,7 +296,7 @@ static void applyDCTToPixel(int col, int row, A2Methods_UArray2 pixels,
         struct pixInfo *destPix = closure->bMethods->at(closure->RGBFloats,
                                                         col, row);
 
-        setY(destPix, y);
-        setPb(destPix, pb_bar);
-        setPr(destPix, pr_bar);
+        destPix->y = y;
+        destPix->pb = pb_bar;
+        destPix->pr = pr_bar;
 }

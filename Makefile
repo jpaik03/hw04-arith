@@ -63,7 +63,8 @@ all: 40image ppmdiff unit_test
 ## Linking step (.o -> executable program)
 
 40image: 40image.o uarray2.o uarray2b.o a2plain.o a2blocked.o compress40.o \
-	 readWriteImage.o pixelOperation.o blockOperation.o bitpack.o
+	 readWriteImage.o pixelOperation.o blockOperation.o codewords.o \
+	 bitpack.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
@@ -73,4 +74,4 @@ unit_test: bitpack.o bitpack_unittests.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
-	rm -f 40image ppmdiff *.o
+	rm -f 40image ppmdiff unit_test *.o

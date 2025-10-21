@@ -12,6 +12,13 @@
 #include <assert.h>
 #include "uarray2.h"
 #include "uarray2b.h"
+#include "stdint.h"
+
+// TODO: struct contract
+struct quantized {
+        unsigned a, indexbpb, indexbpr;
+        int b, c, d;
+};
 
 /* Compression */
 UArray2_T pixelsToDCTBlock(UArray2b_T RGBCompVid, A2Methods_T bMethods, 
