@@ -24,17 +24,3 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
 
 #endif 
 
-/*
-Three design alternatives for the Bitpack module, any of which is acceptable:
-- Implement the signed functions using the unsigned functions
-- Implement the unsigned functions using the signed functions
-- Implement the signed functions and the unsigned functions independently, in 
-  such a way that neither is aware of the other
-*/
-
-// unsigned
-// 2^width > n
-// (1 << n) > n
-
-// signed
-// 2^(width - 1) > n

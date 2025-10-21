@@ -49,10 +49,10 @@ INCLUDES = $(shell echo *.h)
 
 ############### Rules ###############
 
-all: 40image ppmdiff
-# TODO: REMOVE all instances of PPMDIFF
-# TODO: REMOVE all instances of PPMDIFF
-# TODO: REMOVE all instances of PPMDIFF
+all: 40image ppmdiff unit_test
+# TODO: REMOVE all instances of PPMDIFF AND TEST_BITPACK
+# TODO: REMOVE all instances of PPMDIFF AND TEST_BITPACK
+# TODO: REMOVE all instances of PPMDIFF AND TEST_BITPACK
 
 ## Compile step (.c files -> .o files)
 
@@ -67,6 +67,9 @@ all: 40image ppmdiff
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ppmdiff: uarray2.o uarray2b.o a2plain.o a2blocked.o ppmdiff.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+unit_test: bitpack.o bitpack_unittests.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
