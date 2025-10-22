@@ -5,12 +5,8 @@
  *      arith
  * 
  *      Interface for converting pixel data between RGB and Component Video
- *      Color Space (CVCS), and for related utility functions.
+ *      Color Space (CVCS).
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
 
 #include "pnm.h"
 #include "a2methods.h"
@@ -26,9 +22,9 @@
  *      float pb: The blue-difference chroma component.
  *      float pr: The red-difference chroma component.
  * Notes:
- *      This struct is defined publicly in the header so that other modules
- *      (e.g., blockOperation) can directly access its fields to perform
- *      calculations like averaging chroma or applying DCT to luminance.
+ *      This struct is defined publicly in the header so that the blockOperation
+ *      module can directly access its fields to perform calculations like
+ *      averaging chroma or applying DCT to luminance.
  ************************/
 struct pixInfo
 {

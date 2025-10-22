@@ -26,9 +26,9 @@ const unsigned DENOMINATOR = 255;
 
 /* Initialize helper functions, see function contracts below */
 static void applyPixelToCompVid(int col, int row, A2Methods_UArray2 pixels, 
-                             void *elem, void *cl);
+                                void *elem, void *cl);
 static void applyCompVidToPixel(int col, int row, A2Methods_UArray2 pixels, 
-                             void *elem, void *cl);
+                                void *elem, void *cl);
 
 /******** applyPixelToCompVidClosure struct ********
  *
@@ -125,8 +125,8 @@ T getRGBCompVid(Pnm_ppm img, A2Methods_T methods)
  *      Modifies the destination array (RGBInfo) stored in the closure.
  ************************/
 static void applyPixelToCompVid(int col, int row, A2Methods_UArray2 pixels, 
-                                void *elem, void *cl) {
-                        
+                                void *elem, void *cl)
+{                        
         (void) pixels;
         struct applyPixelToCompVidClosure *closure = cl;
         Pnm_rgb pixel = elem;
@@ -220,8 +220,8 @@ Pnm_ppm getRGBInts(T RGBInfo, A2Methods_T methods)
  *      Modifies the destination pixel (using elem) in the pixmap->pixels array.
  ************************/
 static void applyCompVidToPixel(int col, int row, A2Methods_UArray2 pixels, 
-                             void *elem, void *cl) {
-                        
+                                void *elem, void *cl)
+{
         (void) pixels;
         struct applyCompVidToPixelClosure *closure = cl; 
         Pnm_rgb destPixel = elem;
@@ -268,7 +268,8 @@ static void applyCompVidToPixel(int col, int row, A2Methods_UArray2 pixels,
  *      This function is not declared as static, as it will also be used in
  *      blockOperation.
  ************************/
-float keepInRange(float val, float min, float max) {
+float keepInRange(float val, float min, float max)
+{
     if (val < min) {
         return min;
     }

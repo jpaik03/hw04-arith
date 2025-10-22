@@ -15,36 +15,61 @@ ARCHITECTURE
         - a2plain.c/h
         - a2blocked.c/h
         - a2methods.c/h
+
     - Related but not included files:
         - ppmdiff.c/h: used for testing the output of our program
+
     - Given files:
         - 40image.c/h: provided and handles command-line parsing for the 
         40image executable
         - compress40.c/h: boiler-plate code provided, stores the respsective
         arrays for each intermediate step fo compression and decompression
         and calls the respective functions in the correct order. Cleans up and
-        frees memory.
+        frees memory. Calls fucntions in the order of modules from the below
+        interfaces.
+
+    - New files created:
+        - bitpack.c: holds the implementation of the bitpack module
         - readWriteImage.c/h: holds the functions that perform initial read and
         final write of ppm. Handles potential trimming of image.
-        - The resutling 
+        - pixelOperations.c/h: holds functions that deal with data 
+        corresponding with each pixel, specifically to convert between Pixel 
+        and Component values.
+        - blockOperations.c/h: holds functions that deal with data
+        corresponding with each 2x2 block of pixels, specifically to convert
+        between Block and DCT values.
+        - codewords.c/h: holds functions that deal with data 
+        corresponding with each codeword, specifically to convert between
+        Codeword and compressed bit values.
+        
+    - Module call order:
+        - readWriteImage
+        - pixelOperations
+        - blockOperations
+        - codewords
+    
+    - DESIGN DECISIONS:
+        - We ended up deciding to split our modules up based on the different
+        data types that we were dealing with at each step of the process and 
+        
+
 
 
 
 ACKNOWLEDGEMENTS:
-        - TA office hours for: 
-            - helping figure out how to split up the modules
-            - the implications of encaspulation and secret keeping in our
-            program
-                - how to have information like a struct be shared across
-                modules
-            - the need to pass in methods and and change it when dealing 
-            with blocked or plain arrays
-        - Lecture slides for bit packing, shifting, and masking
+    - TA office hours for: 
+        - helping figure out how to split up the modules
+        - the implications of encaspulation and secret keeping in our
+        program
+            - how to have information like a struct be shared across
+            modules
+        - the need to pass in methods and and change it when dealing 
+        with blocked or plain arrays
+    - Lecture slides for bit packing, shifting, and masking
 
 IMPLEMENTATION:
-        - We hope to believe that it has all been implemented correctly, but
-        of course we cannot be sure. We did go back and went for full credit
-        in the readaline file.
+    - To our knowledge, everything should be correctly implemented.
 
 TIME SPENT:
-        ~44 hours
+    - Analyzing problems: 12 hours
+    - Solving problems: 28 hours
