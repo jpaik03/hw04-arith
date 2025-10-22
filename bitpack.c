@@ -201,7 +201,6 @@ uint64_t Bitpack_newu(uint64_t word, unsigned width, unsigned lsb,
                 return value;
         }
 
-        // TODO: re-check this logic
         /* Creating 0 mask */
         uint64_t mask;
         mask = shiftLeft(UINT64_1, width) - 1;

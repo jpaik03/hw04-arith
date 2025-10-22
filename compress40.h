@@ -4,14 +4,13 @@
  *      October 21, 2025
  *      arith
  * 
- *      // TODO: description   
+ *      (Given) Interface for the main compression and decompression functions.
  */
 #include <stdio.h>
 
 /*
- * The two functions below are functions you should implement.
- * They should take their input from the parameter and should
- *  write their output to stdout
+ *  The two functions below are functions you should implement. They should take
+ *  their input from the parameter and should write their output to stdout.
  */
 
 extern void compress40(FILE *input);  /* reads PPM, writes compressed image */

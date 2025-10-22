@@ -49,12 +49,46 @@ ARCHITECTURE
         - codewords
     
     - DESIGN DECISIONS:
-        - We ended up deciding to split our modules up based on the different
-        data types that we were dealing with at each step of the process and 
-        
+        - MODULE STRUCTURE:
+            - We ended up deciding to split our modules up based on the 
+            different data types that we were dealing with at each step of the 
+            process, secret keeping the details of each data type within its 
+            respective module, and keeping groups of a singular function 
+            together.
+            - For example, the readWriteImage module only deals with reading and 
+            writing the image. The pixelOperations module only deals with
+            converting between pixel and CVCS values. The blockOperations module
+            only deals with converting between information based on the 2x2 
+            blocks of pixels and DCT values. The codewords module only deals 
+            with converting between codewords and compressed bit values.
 
+        - DATA STRUCTURE USE:
+            - Another main motive for this structure was the types of data 
+            structures we used. To start off, we are creating these data 
+            structures in compress40.h so that they can be shared across 
+            modules. For representing pixel information, specifically the 
+            resulting CVCS values, we used a uarray2b which sets us up nicely 
+            for the next step of converting to DCT values since we will be 
+            working with 2x2 blocks of pixels. This uarray2 holds pixel structs
+            with this information and is put in the .h which allows the 
+            blockOperation module to fetch the individual pixel information 
+            needed for average calculations. For representing blocks of pixels,
+            we used a uarray2 of structs holding DCT values. This allows us to 
+            easily access each block's DCT values when 
+            converting to codewords in the next step.
 
-
+        - FUNCTION PASSING:
+            - Another design decision we made was to pass in the correct 
+            methods when dealing with blocked or plain arrays. This was 
+            necessary since we were secret keeping the details of the data 
+            structures within their respective modules, and so the modules 
+            dealing with the data structures needed to know how to access them.
+            - For example, in the pixelOperations module, when we are dealing
+            with a uarray2b holding pixel information, we need to pass in the
+            blocked methods so that the module can access the data correctly.
+            - Similarly, in the blockOperations module, when we are dealing
+            with a uarray2 holding block information, we need to pass in the
+            plain methods so that the module can access the data correctly.
 
 ACKNOWLEDGEMENTS:
     - TA office hours for: 
