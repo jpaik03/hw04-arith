@@ -55,7 +55,7 @@ ARCHITECTURE
             process, secret keeping the details of each data type within its 
             respective module, and keeping groups of a singular function 
             together.
-            - For example, the readWriteImage module only deals with reading and 
+            - For example, the readWriteImage module only deals with reading and
             writing the image. The pixelOperations module only deals with
             converting between pixel and CVCS values. The blockOperations module
             only deals with converting between information based on the 2x2 
